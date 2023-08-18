@@ -8,6 +8,7 @@
 import pandas as pd
 import numpy as np
 import scipy.stats as stats
+from scipy import stats
 from scipy.stats import ttest_ind
 from scipy.stats import f
 import statsmodels.stats.api as sms
@@ -74,6 +75,9 @@ temperature_cold_df = temperature_cold_df.dropna()
 
 MF_Release = temperature_cold_df['Microfiber release (ppm)*.1']
 Load_mass = temperature_cold_df['Load mass (kg).1']
+
+
+
 #%%
 
   ###################################################################################################
@@ -868,20 +872,6 @@ ax.set_title('Box and Whisker Plot')
 
 plt.show()
 plt.savefig('Box plot cold.png', dpi=1080, bbox_inches='tight')
-#%%
-
-# Perform t-test to analyse if there exist a significant difference between the means of the two data
-t_statistic, p_value = ttest_ind(log_data_temp40, log_data_cold)
-
-# Print the results
-print("T-Test results:")
-print("Test statistic:", round(t_statistic, 3))
-print("p-value:", round(p_value, 3))
-
-if p_value < 0.05:
-    print("There is a significant difference between the means.")
-else:
-    print("There is no significant difference between the means.")
 
 #%%
 #regression model cold wash
@@ -1013,6 +1003,95 @@ if p_value < alpha:
     print("The data exhibits heteroscedasticity (reject null hypothesis).")
 else:
     print("The data does not exhibit heteroscedasticity (fail to reject null hypothesis).")
+
+
+#%%
+  ###################################################################################################
+ ############################################  T-test #############################################
+##################################################################################################
+# Perform t-test to analyse if there exist a significant difference between the means of the two data
+t_statistic, p_value = ttest_ind(log_data_temp40, log_data_cold)
+
+# Print the results
+print("T-Test results:")
+print("Test statistic:", round(t_statistic, 3))
+print("p-value:", round(p_value, 3))
+
+if p_value < 0.05:
+    print("There is a significant difference between the means.")
+else:
+    print("There is no significant difference between the means.")
+
+# Data for No Detergent
+cycle1_no_detergent = [111.55, 70.24, 52.7, 45.02]
+cycle4_no_detergent = [41.22, 39.12, 40.6, 33.69]
+cycle8_no_detergent = [28.22, 36.72, 15.68, 17.39]
+
+# Data for European Pod
+cycle1_detergent = [66.26, 70.31, 83.59, 61.28]
+cycle4_detergent = [52.34, 54.77, 31.47, 53.19]
+cycle8_detergent = [32.82, 38.61, 18.82, 21.42]
+
+# Perform t-test for each cycle
+def perform_t_test(sample1, sample2):
+    t_stat, p_value = stats.ttest_ind(sample1, sample2, equal_var=False)
+    return t_stat, p_value
+
+def analyze_data(cycle_no, sample1, sample2):
+    print(f"Cycle {cycle_no}:")
+    t_stat, p_value = perform_t_test(sample1, sample2)
+    print(f"  t-statistic: {t_stat:.4f}")
+    print(f"  p-value: {p_value:.4f}")
+    if p_value < 0.05:
+        print("  There is a significant impact of detergents on microfiber release.")
+    else:
+        print("  There is no significant impact of detergents on microfiber release.")
+
+# Perform t-tests for each cycle
+analyze_data(1, cycle1_detergent, cycle1_no_detergent)
+analyze_data(4, cycle4_detergent, cycle4_no_detergent)
+analyze_data(8, cycle8_detergent, cycle8_no_detergent)
+
+# Data for "European Pod"
+european_pod_microfiber = [
+    [96.1, 70.74, 76.41, 71.68],  # Cycle 1
+    [53.52, 40.92, 55.82, 29.61],  # Cycle 4
+    [31.58, 21.71, 21.5, 29.1],    # Cycle 8
+    [28.24, 33.6],                 # Cycle 16 (Note: Only 2 data points)
+    [27.91, 41.07],                # Cycle 32 (Note: Only 2 data points)
+    [17.94, 19.47]                 # Cycle 48 (Note: Only 2 data points)
+]
+
+# Data for "European Pod + Fabric Softener"
+european_pod_fabric_microfiber = [
+    [83.31, 87.04, 69.91, 90.63],  # Cycle 1
+    [26.99, 75.31, 47.45, 85.97],  # Cycle 4
+    [17, 66.58, 24.93, 37.62],     # Cycle 8
+    [30.44, 24.55],                # Cycle 16 (Note: Only 2 data points)
+    [22.66, 23.87],                # Cycle 32 (Note: Only 2 data points)
+    [25.06, 29.46]                 # Cycle 48 (Note: Only 2 data points)
+]
+
+# Define the significance level
+alpha = 0.05
+
+for cycle in range(len(european_pod_microfiber)):
+    print(f"Cycle {cycle+1}:")
+
+    # Perform the two-sample t-test
+    t_statistic, p_value = stats.ttest_ind(
+        european_pod_microfiber[cycle], european_pod_fabric_microfiber[cycle]
+    )
+
+    # Compare the p-value with the significance level
+    if p_value < alpha:
+        print("Reject the null hypothesis: There is a significant difference in microfiber release.")
+    else:
+        print("Fail to reject the null hypothesis: There is no significant difference in microfiber release.")
+
+    print()  # Add a new line for better readability
+
+
 #%%
   ###################################################################################################
  #############################################  SUR  ##############################################
