@@ -13,6 +13,7 @@ is required to run this code.
 Once the shapefile is clipped to European boundaries, the code will start showing errors.
 This occurs as a result of the NEXT_DOWN information for a river being 
 removed during the clipping operation, thereby leaving missing data.
+- @author: Varun
 '''
 
 
